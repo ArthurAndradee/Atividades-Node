@@ -1,14 +1,27 @@
-// Ler pequenas partes de dados e trabalhar com eles, mesmo sem o arquivo completo
-// Netflix & Spotify
+// Streams -> 
+// Pipe -> Encaminhar, Stdin -> Lê, Stdout -> Escreve
 
-// Importação de clientes via CSV (Excel)
-// 1gb - 1.000.000
-// POST /upload import.csv
+// process.stdin
+//     .pipe(process.stdout)
 
-// 10mb/s - 100s
+import { Readable } from 'node:stream'
 
-// 100s -> Inserções no banco de dados
+class OneToHundredStream extends Readable {
+    index = 1
+    
+    _read() {
+        const i = this.index++
+    
+        setTimeout(() => {
+            if(i > 100) {
+                this.push(null)
+            } else {
+                const buf = Buffer.from(String(i))
+    
+                this.push(buf)
+            }
+        }, 100)
+    }
+}
 
-// 10mb/s -> 10.000
-
-// Readable Strams (1gb CSV User) / Writable Streams (Netflix)
+new OneToHundredStream().pipe(process.stdout)
