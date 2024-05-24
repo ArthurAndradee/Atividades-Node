@@ -24,25 +24,41 @@ import http from 'node:http'
 // GET /users => Buscando usuários do back-end
 // POST /users => Criar um usuário no back-end
 
+// Stateful - Stateless
+
+// JSON - Javascript Object Notation
+
+// Cabeçalhos (Requisição/resposta) => Metadados
+
+// HTTP Status Code
+
+const users = []
+
 const server = http.createServer((req, res) => {
     const { method, url } = req
 
     if (method === 'GET' && url === '/users') {
-
-        // Early Return
-        return res.end('Listagem de usuários')
+        return res
+        .setHeader('Content-type', 'application/json')
+        .end(JSON.stringify(users))
     }
     
     if (method === 'POST' && url === '/users') {
-        return res.end('Criação de usuário')
+        users.push({
+            id: '1',
+            name: 'João Dorival',
+            email: 'joaodorival@ex.com'
+        })
+
+        return res.writeHead(201).end()
     }
 
     if (method === 'DELETE' && url === '/users') {
         return res.end('Remoção de usuário')
     }
 
-    return res.end('WE BALL')
+    return res.writeHead(404).end()
 })
 
 server.listen(3333)
-// localhost: 3333
+// localhost:3333
