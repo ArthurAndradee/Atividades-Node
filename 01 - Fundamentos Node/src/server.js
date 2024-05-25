@@ -1,68 +1,33 @@
-// CommonsJS => Require
-// const http = require('http')
-
 import http from 'node:http'
 import { json } from './middlewares/json.js'
-// ESMOdules => import/export
+import { routes } from './routes.js'
+import { extractQuetyParams } from './utils/extract-query-params.js'
 
-// - Criar usuários
-// - Listagem de usuários
-// - Edição de usuários
-// - Remoção de usuários
-//
-// - HTTP
-//     - Método HTTP
-//     - URL
-
-// GET, POST, PUT, PATCH, DELETE
-
-// GET => Buscar um recurso do backend
-// POST => Criar um recurso do backend
-// PUT => Atualizar um recurso do backend
-// PATCH => Atualizar uma informação específica ou de um recurso do backend
-// DELETE  => Deletar um recurso do backend
-
-// GET /users => Buscando usuários do back-end
-// POST /users => Criar um usuário no back-end
-
-// Stateful - Stateless
-
-// JSON - Javascript Object Notation
-
-// Cabeçalhos (Requisição/resposta) => Metadados
-
-// HTTP Status Code
-
-const users = []
+// Query Parameters: URL Stateful => Filtros, paginação, não-obrigatórios
+// Route Parameters: Identificação de recurso 
+// Request Body: Envio de informações de um formulário (HTTPs)
 
 const server = http.createServer(async (req, res) => {
     const { method, url } = req
 
     await json(req,res)
-    
-    if (method === 'GET' && url === '/users') {
-        return res
-        .end(JSON.stringify(users))
-    }
-    
-    if (method === 'POST' && url === '/users') {
-        const { name, email } = req.body
 
-        users.push({
-            id: '1',
-            name,
-            email
-        })
+    const route = routes.find(route => {
+        return route.method === method && route.path.test(url)
+    })
 
-        return res.writeHead(201).end()
-    }
+    if (route) {
+        const routeParams = req.url.match(route.path)
 
-    if (method === 'DELETE' && url === '/users') {
-        return res.end('Remoção de usuário')
+        const { query, ...params } = routeParams.groups
+        
+        req.params = params
+        req.query = query ? extractQuetyParams(query) : {}
+
+        return route.handler(req, res)
     }
 
     return res.writeHead(404).end()
 })
 
 server.listen(3333)
-// localhost:3333
